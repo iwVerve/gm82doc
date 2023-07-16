@@ -60,7 +60,7 @@ def generate_index_body(doc: SimpleDoc, project: Project):
         with tag("h3"):
             text("Scripts")
         generate_script_folder(doc, project, project.script_tree, True)
-        # Objecst
+        # Objects
         with tag("h3"):
             text("Objects")
         text("todo")
@@ -109,17 +109,41 @@ def generate_script_page(script_name: str, script: Script) -> str:
     return indent(doc.getvalue(), indentation="")
 
 
+def generate_hhp_file(files: list, path: str):
+    with open(path, "w") as hhp_file:
+        hhp_file.write(
+            "\n".join(
+                [
+                    "[OPTIONS]",
+                    "Contents file=help.hhc",
+                    "Index file=help.hhk",
+                    "",
+                    "[FILES]",
+                ]
+            )
+        )
+        hhp_file.write("\n")
+        for file in files:
+            hhp_file.write(f"{file.relative_to(path.parent)}\n")
+
+
 def generate_output(project: Project, path: str):
     output_dir = Path(path)
-    index_path = output_dir.joinpath("index.html")
-    stylesheet_path = output_dir.joinpath("style.css")
-    images_dir = output_dir.joinpath("images/")
+    files_dir = output_dir.joinpath("files\\")
+    index_path = files_dir.joinpath("index.html")
+    stylesheet_path = files_dir.joinpath("style.css")
+    images_dir = files_dir.joinpath("images\\")
     back_path = images_dir.joinpath("back.gif")
 
+    files = []
+
     output_dir.mkdir(exist_ok=True)
+    files_dir.mkdir(exist_ok=True)
     images_dir.mkdir(exist_ok=True)
+
     with open(index_path, "w") as index_file:
         index_file.write(generate_index(project))
+        files.append(index_path)
     with open(stylesheet_path, "wb") as stylesheet_file:
         style_bytes = get_data(__name__, r"data\style.css")
         stylesheet_file.write(style_bytes)
@@ -129,6 +153,10 @@ def generate_output(project: Project, path: str):
 
     for script_name, script in project.scripts.items():
         if script.long_doc != "":
-            script_path = output_dir.joinpath(f"{script_name}.html")
+            script_path = files_dir.joinpath(f"{script_name}.html")
             with open(script_path, "w") as script_file:
                 script_file.write(generate_script_page(script_name, script))
+                files.append(script_path)
+
+    hhp_path = output_dir.joinpath("help.hhp")
+    generate_hhp_file(files, hhp_path)
