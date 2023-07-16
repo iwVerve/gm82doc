@@ -1,4 +1,5 @@
 from .project import Project, ScriptFolder, Script
+from .markdown import MyExtension
 from yattag import SimpleDoc, indent
 from pathlib import Path
 from pkgutil import get_data
@@ -23,25 +24,28 @@ def generate_keywords(doc: SimpleDoc, keywords: list):
     doc.asis("-->")
 
 
-def generate_script_folder(doc: SimpleDoc, project: Project, folder: ScriptFolder):
+def generate_script_folder(
+    doc: SimpleDoc, project: Project, folder: ScriptFolder, root: bool
+):
     _, tag, text = doc.tagtext()
     with tag("ul"):
-        with tag("li"):
-            text(folder.name)
+        if not root:
+            with tag("li"):
+                text(folder.name)
         for child in folder.children:
             if isinstance(child, str):
                 script = project.scripts[child]
                 with tag("li"):
                     with tag("tt"):
                         if script.long_doc == "":
-                            text(child)
+                            text(f"{child}{script.signature}")
                         else:
                             with tag("a", href=f"{child}.html"):
-                                text(child)
+                                text(f"{child}{script.signature}")
                     doc.text(f"\n{script.short_doc}")
                     doc.asis("<br>\n")
             else:
-                generate_script_folder(doc, project, child)
+                generate_script_folder(doc, project, child, False)
 
 
 def generate_index_body(doc: SimpleDoc, project: Project):
@@ -49,11 +53,17 @@ def generate_index_body(doc: SimpleDoc, project: Project):
 
     with tag("body", background="images/back.gif"):
         doc.asis("<!--START-->")
-        with tag("h3"):
+        with tag("h1"):
             text("Project index")
         doc.asis("<p>")
-        with tag("blockquote"):
-            generate_script_folder(doc, project, project.script_tree)
+        # Scripts
+        with tag("h3"):
+            text("Scripts")
+        generate_script_folder(doc, project, project.script_tree, True)
+        # Objecst
+        with tag("h3"):
+            text("Objects")
+        text("todo")
         doc.asis("<!--END-->")
 
 
@@ -77,16 +87,22 @@ def generate_script_page(script_name: str, script: Script) -> str:
         generate_head(doc, script_name)
         with tag("body", background="images/back.gif"):
             doc.asis("<!--START-->")
+
+            # Heading
             with tag("a", href="index.html"):
                 text("Back to index")
             with tag("h3"):
                 text(script_name)
             doc.asis("<p>")
-            with tag("blockquote"):
-                text(f"{script_name}{script.signature}")
-                with tag("p"):
-                    text(script.short_doc)
-                doc.asis(markdown(script.long_doc))
+
+            # Signature
+            text(f"{script_name}{script.signature}")
+            # Short doc
+            with tag("p"):
+                text(script.short_doc)
+            # Long doc
+            doc.asis(markdown(script.long_doc, extensions=[MyExtension()]))
+
             doc.asis("<!--END-->")
     generate_keywords(doc, [script_name])
 

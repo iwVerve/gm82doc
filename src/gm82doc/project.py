@@ -98,6 +98,7 @@ class Project:
                             can_read_short_doc = False
                             state = 1
                         elif can_read_long_doc and line.startswith("/*doc"):
+                            can_read_short_doc = False
                             can_read_long_doc = False
                             state = 2
                         elif line.strip() != "":
