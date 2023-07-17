@@ -9,8 +9,10 @@ from sys import argv
 
 
 if __name__ == "__main__":
-    if len(argv) >= 1:
-        project_path = Path(argv[0])
+    if len(argv) >= 2:
+        project_path = Path(argv[1])
+        if not project_path.is_dir():
+            project_path = project_path.parent
         project = Project(project_path)
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
