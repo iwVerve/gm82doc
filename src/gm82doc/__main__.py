@@ -17,7 +17,6 @@ if __name__ == "__main__":
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             generate_output(project, temp_dir)
-            print(temp_dir)
             run([HHC_PATH, temp_path.joinpath("help.chm")])
             copyfile(temp_path.joinpath("help.chm"), project_path.joinpath("help.chm"))
     else:
