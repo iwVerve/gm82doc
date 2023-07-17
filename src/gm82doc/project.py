@@ -22,7 +22,7 @@ class Script:
 
 @define
 class Project:
-    path: Path
+    path: str
     scripts: dict[str, Script]
     script_tree: ScriptFolder
 
@@ -33,10 +33,6 @@ class Project:
         self.open()
 
     def open(self):
-        if not self.path.endswith("\\"):
-            self.path += "\\"
-        self.path = Path(self.path)
-
         self.read_script_tree()
         self.read_script_docs()
 

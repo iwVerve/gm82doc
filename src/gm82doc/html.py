@@ -1,5 +1,6 @@
 from .project import Project, ScriptFolder, Script
 from .markdown import MyExtension
+from .hhw import generate_hhp_file_path, generate_hhk_file_path, generate_hhc_file_path
 from yattag import SimpleDoc, indent
 from pathlib import Path
 from pkgutil import get_data
@@ -61,9 +62,9 @@ def generate_index_body(doc: SimpleDoc, project: Project):
             text("Scripts")
         generate_script_folder(doc, project, project.script_tree, True)
         # Objects
-        with tag("h3"):
-            text("Objects")
-        text("todo")
+        # with tag("h3"):
+        #     text("Objects")
+        # text("todo")
         doc.asis("<!--END-->")
 
 
@@ -109,24 +110,6 @@ def generate_script_page(script_name: str, script: Script) -> str:
     return indent(doc.getvalue(), indentation="")
 
 
-def generate_hhp_file(files: list, path: str):
-    with open(path, "w") as hhp_file:
-        hhp_file.write(
-            "\n".join(
-                [
-                    "[OPTIONS]",
-                    "Contents file=help.hhc",
-                    "Index file=help.hhk",
-                    "",
-                    "[FILES]",
-                ]
-            )
-        )
-        hhp_file.write("\n")
-        for file in files:
-            hhp_file.write(f"{file.relative_to(path.parent)}\n")
-
-
 def generate_output(project: Project, path: str):
     output_dir = Path(path)
     files_dir = output_dir.joinpath("files\\")
@@ -159,4 +142,8 @@ def generate_output(project: Project, path: str):
                 files.append(script_path)
 
     hhp_path = output_dir.joinpath("help.hhp")
-    generate_hhp_file(files, hhp_path)
+    generate_hhp_file_path(hhp_path, files)
+    hhk_path = output_dir.joinpath("help.hhk")
+    generate_hhk_file_path(hhk_path, project)
+    hhc_path = output_dir.joinpath("help.hhc")
+    generate_hhc_file_path(hhc_path, project)
